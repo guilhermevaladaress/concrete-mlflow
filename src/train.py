@@ -24,6 +24,14 @@ from common import (
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DATASET_TAGS = {
+    "dataset": "Concrete Compressive Strength",
+    "dataset_source": "UCI ML Repository",
+    "dataset_uci_id": "165",
+    "dataset_rows": "1030",
+    "dataset_features": "8",
+}
+
 
 def git(*args):
     try:
@@ -78,6 +86,7 @@ def main():
             "split": "60/20/20",
             "device": str(device),
         })
+        mlflow.set_tags(DATASET_TAGS)
         mlflow.set_tags(version_tags())
         mlflow.log_artifact(os.path.join(ROOT, "requirements.txt"))
         mlflow.log_dict(cfg, "config.json")

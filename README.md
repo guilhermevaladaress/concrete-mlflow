@@ -69,6 +69,7 @@ Cada run registra no MLflow (`sqlite:///mlflow.db`, experimento `concrete-mlp`):
 - **Parâmetros:** lr, weight_decay, epochs, hidden_sizes, seed, otimizador, loss, split, device.
 - **Métricas por época:** `train_loss`, `val_loss` (MSE na escala padronizada), `val_rmse`, `val_mae`, `val_r2` (em MPa).
 - **Métricas finais:** `final_val_rmse`, `final_val_mae`, `final_val_r2`.
+- **Tags do dataset:** `dataset`, `dataset_source`, `dataset_uci_id`, `dataset_rows` e `dataset_features`.
 - **Tags de versão:** `git_commit` (hash do commit), `git_dirty` (se havia alterações não commitadas, com a lista em `git_dirty_files`), `python_version`, `torch_version`, `mlflow_version` e `sklearn_version`.
 - **Artefatos:** `config.json`, `preprocessing.json` (médias/desvios do scaler e tamanhos do split), `requirements.txt` e `model/model.pt`.
 - **Trace:** um span `pipeline` com os filhos `preparar`, `treinar` e `validar`.
