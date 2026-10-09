@@ -23,6 +23,7 @@ pip install -r requirements.txt
 
 > No Windows, o alias `python` fora do venv abre a Microsoft Store. Ative o venv antes.
 > Se aparecerem caracteres estranhos no terminal (acentos), rode `$env:PYTHONUTF8=1`.
+> Se o `pip install` falhar com `OSError: [Errno 2] No such file or directory` num arquivo do `torch`, o caminho passou do limite de 260 caracteres do Windows. Clone o projeto numa pasta de caminho curto (ex.: `C:\Users\<voce>\concrete-mlflow`) ou habilite caminhos longos no Windows (`LongPathsEnabled`).
 
 ## Estrutura
 
