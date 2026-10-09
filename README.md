@@ -32,9 +32,10 @@ concrete-mlflow/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── common.py          # dados, split, modelo MLP, métricas, seed
-├── train.py           # treino + validação, registrado no MLflow (sem teste)
-├── evaluate.py        # avalia o teste UMA vez na run escolhida
+├── src/
+│   ├── common.py      # dados, split, modelo MLP, métricas, seed
+│   ├── train.py       # treino + validação, registrado no MLflow (sem teste)
+│   └── evaluate.py    # avalia o teste UMA vez na run escolhida
 ├── configs/
 │   ├── run_a.yaml
 │   ├── run_b.yaml
@@ -55,8 +56,12 @@ Base comum: Adam, treino full-batch, 1000 épocas, 1 camada oculta de 16 neurôn
 
 ## Como rodar
 
+Todos os comandos são executados **na raiz do projeto** (é lá que o `mlflow.db` é criado):
+
 ```powershell
 .\run_all.ps1
+# ou uma run de cada vez:
+python src/train.py --config configs/run_a.yaml
 ```
 
 Cada run registra no MLflow (`sqlite:///mlflow.db`, experimento `concrete-mlp`):
@@ -82,7 +87,7 @@ Abra http://localhost:5000 (se a porta estiver ocupada, use `--port 5001`).
 Depois de escolher a run pela validação:
 
 ```powershell
-python evaluate.py --run_id <RUN_ID_ESCOLHIDA>
+python src/evaluate.py --run_id <RUN_ID_ESCOLHIDA>
 ```
 
 O script recarrega o modelo e o pré-processamento da run, refaz o mesmo split e registra `test_rmse`, `test_mae` e `test_r2` na própria run. Ele **recusa** uma segunda execução na mesma run: o teste só é olhado uma vez.
