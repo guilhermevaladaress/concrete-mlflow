@@ -1,0 +1,6 @@
+run_name: B-taxa-menor
+lr: 0.001
+weight_decay: 0.0
+epochs: 1000
+hidden_sizes: [16]
+seed: 33
