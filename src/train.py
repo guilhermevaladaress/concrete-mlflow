@@ -1,8 +1,11 @@
 import argparse
 import os
+import platform
+import subprocess
 import tempfile
 
 import mlflow
+import sklearn
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -17,6 +20,34 @@ from common import (
     set_seed,
     split_data,
 )
+
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def git(*args):
+    try:
+        return subprocess.check_output(
+            ["git", *args], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def version_tags():
+    """Versão do código (commit) e do ambiente, para rastrear cada run."""
+    status = git("status", "--porcelain")
+    tags = {
+        "git_commit": git("rev-parse", "HEAD") or "desconhecido",
+        "git_dirty": "desconhecido" if status is None else str(bool(status)).lower(),
+        "python_version": platform.python_version(),
+        "torch_version": torch.__version__,
+        "mlflow_version": mlflow.__version__,
+        "sklearn_version": sklearn.__version__,
+    }
+    if status:
+        tags["git_dirty_files"] = status[:5000]
+    return tags
 
 
 def main():
@@ -47,6 +78,8 @@ def main():
             "split": "60/20/20",
             "device": str(device),
         })
+        mlflow.set_tags(version_tags())
+        mlflow.log_artifact(os.path.join(ROOT, "requirements.txt"))
         mlflow.log_dict(cfg, "config.json")
 
         with mlflow.start_span(name="pipeline"):

@@ -69,7 +69,8 @@ Cada run registra no MLflow (`sqlite:///mlflow.db`, experimento `concrete-mlp`):
 - **Parâmetros:** lr, weight_decay, epochs, hidden_sizes, seed, otimizador, loss, split, device.
 - **Métricas por época:** `train_loss`, `val_loss` (MSE na escala padronizada), `val_rmse`, `val_mae`, `val_r2` (em MPa).
 - **Métricas finais:** `final_val_rmse`, `final_val_mae`, `final_val_r2`.
-- **Artefatos:** `config.json`, `preprocessing.json` (médias/desvios do scaler e tamanhos do split) e `model/model.pt`.
+- **Tags de versão:** `git_commit` (hash do commit), `git_dirty` (se havia alterações não commitadas, com a lista em `git_dirty_files`), `python_version`, `torch_version`, `mlflow_version` e `sklearn_version`.
+- **Artefatos:** `config.json`, `preprocessing.json` (médias/desvios do scaler e tamanhos do split), `requirements.txt` e `model/model.pt`.
 - **Trace:** um span `pipeline` com os filhos `preparar`, `treinar` e `validar`.
 
 ### MLflow UI
@@ -96,7 +97,9 @@ O script recarrega o modelo e o pré-processamento da run, refaz o mesmo split e
 
 - **Scaler ajustado só no treino.** O script original ajustava o `StandardScaler` com todos os dados, o que vaza informação da validação e do teste para o treino. Aqui, o scaler das features e o do alvo usam `fit` apenas em `X_train`/`y_train` e só `transform` nos outros conjuntos. Os parâmetros ficam salvos em `preprocessing.json`.
 - **Alvo padronizado.** A rede treina com o alvo padronizado (`MSELoss` na escala z), e as métricas em MPa são calculadas após desfazer a padronização.
-- **Seed 33 e split 60/20/20** (618 treino / 206 validação / 206 teste), como no script da aula.
+- **Seed 33 e split 60/20/20** (618 treino / 206 validação / 206 teste), como no script da aula. O split usa `train_test_split` com `random_state=33` fixo, então os três conjuntos são sempre os mesmos em todas as runs e no `evaluate.py`.
+- **Sem divisão estratificada.** A estratificação vista nos slides vale para classificação: ela mantém a proporção de cada classe nos conjuntos. Aqui o alvo (resistência em MPa) é contínuo e não tem classes, então a divisão é aleatória simples.
+- **Versão do código e do ambiente em cada run.** O `train.py` grava como tags o commit do git, se havia alterações não commitadas e as versões de Python, torch, MLflow e scikit-learn, além do `requirements.txt` como artefato. As 3 runs registradas foram treinadas antes de a pasta virar um repositório git. Por isso, as tags delas (commit `7dd8ba6`) foram adicionadas depois, com `MlflowClient.set_tag`, e marcadas com `git_commit_retroativo`. Antes disso, conferi que `common.py`, `train.py`, `configs/` e `requirements.txt` desse commit são idênticos aos usados no treino.
 - **Teste reservado.** O `train.py` não calcula nada no teste. A escolha da run é feita só com a validação, e o teste é avaliado uma vez pelo `evaluate.py`.
 - **Seed sem o módulo `random`.** O `set_seed` semeia NumPy e PyTorch, mas não o `random` global do Python. Na primeira execução, `random.seed(33)` fazia o OpenTelemetry (usado pelo tracing do MLflow) gerar **o mesmo trace ID** em todas as runs. O trace da run B colidia com o da A e se perdia. O pipeline não usa `random`, então a reprodutibilidade não muda: as métricas saíram idênticas antes e depois da correção.
 
